@@ -1,0 +1,8 @@
+# Milestone 1-4: data + ML
+pandas
+numpy
+scikit-learn
+matplotlib
+
+# Milestone 5+ (API) will add: fastapi, uvicorn
+# kept out for now so early setup stays fast

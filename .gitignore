@@ -1,0 +1,20 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Data files are large — download via README instructions instead
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Trained model artifacts (regenerate with the training script)
+models/*.joblib
+
+# Node (dashboard, added in Milestone 6)
+node_modules/
+
+# Editors / OS
+.vscode/
+Thumbs.db
