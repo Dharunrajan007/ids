@@ -117,3 +117,18 @@ hierarchical binary-then-category (rejected: more moving parts for no demo value
 **Consequences:** Milestone 4's model selection determines the single production
 artifact; `/health.model_version` describes the multi-class pipeline; the M3
 binary baseline appears in the evaluation report but is not deployed.
+
+## ADR-013 — pytest for automated verification
+
+**Decision:** Automated tests live in `tests/` and run with pytest
+(`python -m pytest` from the project root); pytest is pinned in
+requirements.txt. From Milestone 2 onward, each milestone's Definition of Done
+includes passing tests for its verifiable guarantees.
+**Reason:** M2's guarantees (leakage prevention, domain repair, reproducible
+splits) are exactly the kind that silently regress; executable checks beat
+one-off console commands. pytest is the de-facto standard with minimal
+boilerplate (plain asserts, session-scoped fixtures amortize the dataset load).
+**Alternatives:** unittest (stdlib, no new dependency, but more boilerplate and
+weaker fixture reuse); ad-hoc verification scripts (not repeatable, rot fast).
+**Consequences:** One new development dependency (pytest); the suite becomes
+CI-ready if a remote with CI is added later.

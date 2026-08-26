@@ -12,5 +12,8 @@ joblib==1.5.3
 # Notebook workflow: VS Code "# %%" cell execution (ADR-011)
 ipykernel==7.3.0
 
+# Testing (ADR-013): run with `python -m pytest` from the project root
+pytest==9.1.1
+
 # Milestone 5+ (API) will add: fastapi, uvicorn
 # kept out for now so early setup stays fast
