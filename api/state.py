@@ -49,7 +49,12 @@ class PredictionHistory:
                 self._normal += 1
             else:
                 self._attacks_by_type[record["attack_type"]] += 1
-            minute = record["timestamp"][11:16]  # "HH:MM" from ISO 8601
+            # Keyed by full "YYYY-MM-DDTHH:MM" (displayed as "HH:MM") so a
+            # long-lived server never merges today's 10:14 into yesterday's
+            # still-resident 10:14 bucket — audit finding on the HH:MM-only
+            # key. Eviction stays count-based over the last 60 distinct
+            # minutes seen.
+            minute = record["timestamp"][:16]
             if minute not in self._timeline:
                 self._timeline[minute] = [0, 0]
                 while len(self._timeline) > TIMELINE_MINUTES:
@@ -73,7 +78,7 @@ class PredictionHistory:
                     for kind in ATTACK_TYPES
                 },
                 "traffic_timeline": [
-                    {"minute": minute, "normal": counts[0],
+                    {"minute": minute[11:], "normal": counts[0],
                      "attack": counts[1]}
                     for minute, counts in self._timeline.items()
                 ],

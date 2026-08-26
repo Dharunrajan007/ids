@@ -132,3 +132,31 @@ boilerplate (plain asserts, session-scoped fixtures amortize the dataset load).
 weaker fixture reuse); ad-hoc verification scripts (not repeatable, rot fast).
 **Consequences:** One new development dependency (pytest); the suite becomes
 CI-ready if a remote with CI is added later.
+
+## ADR-014 — M5 request-validation bounds and contract clarifications (2026-08-26)
+
+**Decision:** The `/predict` implementation adds two client-visible bounds the
+frozen contract left unspecified, recorded here because the contract's own
+header requires an ADR for any change: (1) `/predictions/recent`'s `limit` is
+restricted to 1–500 (422 outside that range; 500 ≤ the 1,000-record history
+bound, so a full page always exists); (2) numeric features are validated
+STRICTLY as finite JSON numbers within float32 range (±3.4e38) — strings,
+booleans, NaN/Infinity and larger magnitudes → 422. Validation errors are
+returned WITHOUT echoing the raw input value back into the response body.
+The remaining items in the contract's "Implementation clarifications" section
+(model_version format, timestamp precision, state sizes, CORS origins) fill
+gaps rather than change behavior and ride along under this ADR.
+**Reason:** Unbounded `limit` invites a memory-shaped foot-gun for no demo
+value. The float32 bound exists because the serialized Random Forest casts
+input to float32: a finite JSON number like 1e308 would overflow to infinity
+inside the pipeline and crash the request with a 500, violating NFR6 — the
+bound converts that into a clean 422. The no-echo rule exists because
+adversarial testing showed the default error path crashes rendering NaN
+values and deeply nested structures that appear in the rejected input.
+**Alternatives:** Cap-free limit (rejected: unbounded response size); lax
+numeric coercion, pydantic's default (rejected: "181"/true silently becoming
+model input contradicts the documented 422 promise); echoing input in 422
+detail, FastAPI's default (rejected: makes the error path itself crashable).
+**Consequences:** A client requesting limit > 500 must page instead; the M7
+simulator replays real NSL-KDD rows (all within float32 range: max observed
+src_bytes ≈ 1.38e9), so no in-project client is affected.

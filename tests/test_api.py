@@ -24,7 +24,11 @@ from api.model_service import MODEL_FILE
 from api.state import HISTORY_LIMIT, PredictionHistory
 from src.preprocessing import split_features_target
 
-pytestmark = pytest.mark.skipif(
+# The artifact is gitignored, so endpoint tests skip on a machine that hasn't
+# built it yet — but ONLY via this fixture: the source-scan tests below run
+# unconditionally (audit finding: a module-level skip would silently disable
+# the ADR-012 and KDDTest+ isolation guards on a fresh clone).
+needs_artifact = pytest.mark.skipif(
     not MODEL_FILE.exists(),
     reason="multiclass_pipeline.joblib not built on this machine",
 )
@@ -34,6 +38,8 @@ pytestmark = pytest.mark.skipif(
 
 @pytest.fixture(scope="session")
 def client():
+    if not MODEL_FILE.exists():
+        pytest.skip("multiclass_pipeline.joblib not built on this machine")
     from api.main import app
     with TestClient(app) as test_client:
         yield test_client
@@ -198,6 +204,60 @@ def test_validation_errors_do_not_break_later_requests(client, one_row):
         "/predict", json={"features": one_row}).status_code == 200
 
 
+def test_numeric_fields_are_strict_json_numbers(client, one_row):
+    """Audit finding: lax mode silently coerced "181" and true into model
+    input while the docs promised 422. Numbers stay accepted (int or float);
+    strings and booleans are rejected."""
+    ok = client.post(
+        "/predict", json={"features": {**one_row, "src_bytes": 181}})
+    assert ok.status_code == 200
+    for bad_value in ("181", True):
+        response = client.post(
+            "/predict", json={"features": {**one_row, "src_bytes": bad_value}})
+        assert response.status_code == 422, bad_value
+
+
+def test_finite_float_beyond_float32_range_returns_422(client, one_row):
+    """Audit finding: 1e308 passed validation, overflowed the pipeline's
+    float32 cast and produced a 500. The schema bound turns it into 422."""
+    for bad_value in (1e308, 3.5e38, -1e39):
+        response = client.post(
+            "/predict", json={"features": {**one_row, "src_bytes": bad_value}})
+        assert response.status_code == 422, bad_value
+    within_range = client.post(
+        "/predict", json={"features": {**one_row, "src_bytes": 3.4e38}})
+    assert within_range.status_code == 200
+
+
+def test_json_nan_and_infinity_literals_return_422(client, one_row):
+    """Audit finding: stdlib json parses the non-standard NaN/Infinity
+    tokens; the default 422 handler then crashed rendering them (500).
+    The sanitizing handler must answer a clean 422."""
+    template = dict(one_row)
+    template.pop("src_bytes")
+    import json as jsonlib
+    base = jsonlib.dumps({"features": {**template, "src_bytes": 0}})
+    for literal in ("NaN", "Infinity", "-Infinity", "1e400"):
+        payload = base.replace('"src_bytes": 0', f'"src_bytes": {literal}')
+        response = client.post(
+            "/predict", content=payload,
+            headers={"content-type": "application/json"})
+        assert response.status_code == 422, literal
+        assert response.json()["detail"]  # field-level info survives
+
+
+def test_deeply_nested_body_returns_422_not_recursion_error(client):
+    """Audit finding: the default handler recursed over the echoed input and
+    hit the recursion limit (500) on a ~12 KB crafted body."""
+    nested = jsonloads_bomb = "[" * 6000 + "]" * 6000
+    response = client.post(
+        "/predict", content=f'{{"features": {nested}}}',
+        headers={"content-type": "application/json"})
+    assert response.status_code == 422
+    assert jsonloads_bomb not in response.text  # input is not echoed back
+
+
+@needs_artifact
 def test_internal_prediction_error_returns_500_not_crash(one_row):
     """If prediction itself blows up the app must answer 500 and keep serving
     (separate client: raise_server_exceptions=False, and no shared state)."""
@@ -321,6 +381,20 @@ def test_timeline_is_bounded_to_its_window():
                          "timestamp": f"2026-08-26T{hour:02d}:{minute:02d}:00Z",
                          "features": {}})
     assert len(history.stats()["traffic_timeline"]) == TIMELINE_MINUTES
+
+
+def test_timeline_keeps_same_wall_minute_on_different_days_apart():
+    """Audit finding: an HH:MM-only key merged yesterday's 10:14 traffic
+    into today's bucket on a long-lived server."""
+    history = PredictionHistory()
+    for day in ("25", "26"):
+        history.add({"prediction": "normal", "attack_type": None,
+                     "confidence": 0.5,
+                     "timestamp": f"2026-08-{day}T10:14:00Z", "features": {}})
+    timeline = history.stats()["traffic_timeline"]
+    assert len(timeline) == 2
+    assert all(entry["minute"] == "10:14" and entry["normal"] == 1
+               for entry in timeline)
 
 
 def test_restart_semantics_reset_history(client, one_row):

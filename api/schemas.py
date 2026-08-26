@@ -10,7 +10,12 @@ one source of truth).
 Validation behavior (NFR6 — malformed input must 422, never crash):
 - every one of the 40 features is required; missing ones → 422
 - unknown/extra fields → 422 (extra="forbid", catches typos like "durration")
-- non-numeric values in numeric fields → 422; NaN/Infinity rejected
+- numeric fields are STRICT: JSON numbers only — strings ("181") and
+  booleans → 422, never silently coerced into model input
+- NaN/Infinity → 422, and finite magnitudes beyond float32 range → 422:
+  the Random Forest validates its input as float32, so anything above
+  ±3.4e38 would overflow to infinity inside the pipeline and crash it —
+  the bound turns that crash into a clean validation error
 - unknown categorical VALUES (e.g. a service the model never saw) are
   deliberately accepted: the pipeline's OneHotEncoder(handle_unknown="ignore")
   encodes them as an all-zeros block instead of crashing (M2 decision §6)
@@ -25,6 +30,9 @@ from src.preprocessing import FEATURE_COLUMNS
 
 ATTACK_TYPES = ("dos", "probe", "r2l", "u2r")
 
+# Largest finite float32 — the dtype sklearn's tree code casts inputs to.
+FLOAT32_MAX = 3.4028235e38
+
 # --- Request ---------------------------------------------------------------
 
 FeatureVector = create_model(
@@ -32,7 +40,8 @@ FeatureVector = create_model(
     __config__=ConfigDict(extra="forbid"),
     **{
         name: (str, ...) if name in CATEGORICAL_FEATURES
-        else (float, Field(allow_inf_nan=False))
+        else (float, Field(strict=True, allow_inf_nan=False,
+                           ge=-FLOAT32_MAX, le=FLOAT32_MAX))
         for name in FEATURE_COLUMNS
     },
 )

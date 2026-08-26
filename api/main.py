@@ -13,7 +13,9 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 
 from fastapi import FastAPI, Query
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from api.model_service import ModelService
 from api.schemas import (
@@ -64,6 +66,26 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_error_returns_422(request, exc):
+    """422 with field-level detail, WITHOUT echoing the raw input back.
+
+    FastAPI's default handler serializes each error's `input` value into the
+    response. Adversarial audit showed two ways that crashes the 422 itself
+    into a 500: a JSON NaN/Infinity literal (stdlib json parses them; the
+    response encoder then refuses to emit them) and a deeply nested body
+    (the encoder recurses over it past the recursion limit). Dropping the
+    input echo keeps the useful part — which field, what's wrong — and makes
+    the 422 unconditionally serializable (NFR6: malformed input never
+    crashes a request).
+    """
+    return JSONResponse(status_code=422, content={"detail": [
+        {"loc": list(error.get("loc", [])), "msg": str(error.get("msg", "")),
+         "type": str(error.get("type", ""))}
+        for error in exc.errors()
+    ]})
 
 
 @app.post("/predict", response_model=PredictResponse)
