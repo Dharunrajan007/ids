@@ -70,3 +70,69 @@ Generic items apply to all milestones; specific items are added when the milesto
       identical metrics (diff excluding timing lines)
 - [x] Docs updated: M3 results doc, README status, PROJECT_KNOWLEDGE, risk
       register review; NFR1 timing recorded (train 14.7 s, predict ≪ 200 ms)
+
+## Milestone 4 — multi-class model (the production candidate, ADR-012)
+
+DATA
+- [ ] Target = 5-way `category` (normal/dos/probe/r2l/u2r) via
+      `split_features_target(df, "multiclass")`; M2 preprocessing reused
+      unchanged; same stratified 80/20 split as M3 (100,778 / 25,195,
+      `RANDOM_STATE = 42`); KDDTest+ never read (source-scan test covers all
+      of src/training + src/evaluation automatically)
+- [ ] Fresh class-distribution analysis recorded (counts, percentages,
+      imbalance ratios, stratification check, per-label minority breakdown)
+
+BASELINE
+- [ ] Majority-class baseline ("always normal") evaluated with the full
+      metric set — the floor every model must clearly beat
+
+MODELS — 3 candidates, each ONE sklearn Pipeline (preprocessor + classifier),
+sensible defaults, no hyperparameter search (same M3 rule), `RANDOM_STATE`
+- [ ] LogisticRegression (scaling="standard", max_iter=1000) — linear
+      reference; native multinomial in sklearn
+- [ ] RandomForestClassifier (scaling="none", 100 trees) — M3 winner,
+      natively multi-class
+- [ ] HistGradientBoostingClassifier (scaling="none" + named densify step —
+      it requires dense input) — sklearn-native gradient boosting, the
+      strongest classical tabular family; no external dependency (no
+      XGBoost/LightGBM, per scope rules)
+
+EVALUATION — validation split ONLY, for every candidate
+- [ ] 5×5 confusion matrix, accuracy, per-class precision/recall/F1,
+      macro + weighted averages, training time, prediction time
+- [ ] Train-vs-validation accuracy gap recorded (overfitting check, R4)
+
+MINORITY-CLASS ANALYSIS
+- [ ] Explicit R2L and U2R analysis: which rows were caught/missed and as
+      what; stated caveats — validation U2R is only 10 rows (2 of 4 types),
+      validation R2L is 89% warezclient; poor results reported, not hidden
+
+MODEL SELECTION — documented framework, in priority order:
+      (1) macro F1, (2) minority-class recall/F1 (R2L, U2R),
+      (3) attack detection quality (normal-row confusion / missed attacks),
+      (4) false-positive behavior, (5) overall performance,
+      (6) computational efficiency. Accuracy alone is never the criterion;
+      KDDTest+ is never consulted.
+- [ ] Selection recorded with reasoning defensible to an examiner
+
+SERIALIZATION
+- [ ] Selected pipeline serialized as ONE joblib artifact
+      (models/multiclass_pipeline.joblib) + metadata JSON (model name, task,
+      classes, config, RANDOM_STATE, Python/sklearn versions, date,
+      validation metrics, feature/preprocessing info)
+- [ ] Reload verified: predictions before save == predictions after reload
+      on all 25,195 validation rows
+
+VERIFICATION
+- [ ] pytest coverage: pipeline construction per family, training +
+      prediction, 5-class output domain, probability validity, save/reload
+      consistency, KDDTest+ isolation; full suite green
+- [ ] Full M4 run executed at least twice: metrics, confusion matrices and
+      selected model identical (diff excluding timing lines)
+- [ ] Adversarial review pass (leakage, misuse of metrics, unknown
+      categoricals, docs-vs-code drift, M3 regression) with findings fixed
+
+DOCS
+- [ ] docs/m4-multiclass-evaluation.md written; definition-of-done, README,
+      PROJECT_KNOWLEDGE, risk register updated; U2R/R2L results interpreted
+      in light of extreme imbalance and dataset age
