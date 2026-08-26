@@ -1,12 +1,12 @@
 # Risk Register (living document — statuses reviewed every milestone)
 
-Last reviewed: 2026-08-26 (Milestone 1 closeout)
+Last reviewed: 2026-08-26 (Milestone 2)
 
 | ID | Risk | Probability | Impact | Mitigation | Status |
 |----|------|-------------|--------|------------|--------|
 | R1 | Misleading accuracy: imbalanced classes + unseen attack types in KDDTest+ make "99% accuracy" claims false | High | High | Evaluate with confusion matrix, per-class recall, F1 from Milestone 3 onward; never report accuracy alone | Open |
 | R2 | Train/serve feature mismatch: API feeds the model differently-shaped data than training | Medium | High | Single serialized sklearn Pipeline used in both places (ADR-005) | Mitigated by design |
-| R3 | Data leakage: fitting scalers/encoders on test data inflates results | Medium | High | Fit transformers on training split only; binding evaluation protocol below; explicit check in Milestone 2 review | Open |
+| R3 | Data leakage: fitting scalers/encoders on test data inflates results | Medium | High | Fit transformers on training split only; binding evaluation protocol below; enforced by M2 automated tests (feature allow-list, transform-without-refit, source-scan proving src/preprocessing cannot read KDDTest+) | Mitigated by design + tests |
 | R4 | Model overfitting to training data | Medium | High | Stratified validation split + cross-validation per the evaluation protocol below; compare train vs test metrics | Open |
 | R5 | React integration friction (frontend tooling eats sessions) | Medium | Medium | API built and tested first (M5 before M6); minimal component set; Recharts | Open |
 | R6 | Dataset corruption / accidental modification of raw files | Low | High | Raw data is read-only by convention: scripts never write to data/raw/; re-downloadable via src/download_data.py | Mitigated by design |

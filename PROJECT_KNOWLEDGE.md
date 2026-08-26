@@ -3,7 +3,7 @@
 Single-file project memory. A new contributor (or a future AI session) should be able
 to work on this project from this file + the docs it links, with zero chat history.
 
-Last updated: 2026-08-26 (Milestone-1 closeout: review must-fixes applied).
+Last updated: 2026-08-26 (Milestone 2 complete: preprocessing + validation foundation).
 
 ## What this project is
 
@@ -41,8 +41,10 @@ no websockets (polling), no packet capture (replay simulator).
       requirements pinned (Python 3.14); RANDOM_STATE=42; evaluation protocol recorded
       (risk-register.md); M2 preprocessing decisions recorded (docs/preprocessing-decisions.md).
       Still pending: GitHub remote + milestone-1 tag (user action).
-- [ ] M2 preprocessing pipeline → M3 binary baseline → M4 multi-class + comparison
-      → M5 API → M6 dashboard → M7 simulator/demo → M8 docs → M9 (optional) CICIDS2017
+- [x] M2 preprocessing pipeline (2026-08-26) — `src/preprocessing/` package + 21-test
+      pytest suite (ADR-013); DoD checklist complete; see "Preprocessing layer" below
+- [ ] M3 binary baseline → M4 multi-class + comparison → M5 API → M6 dashboard
+      → M7 simulator/demo → M8 docs → M9 (optional) CICIDS2017
 
 ## Important decisions (full reasoning in docs/DECISIONS.md)
 
@@ -85,6 +87,23 @@ su_attempted 2→1 recode, scaling trade-offs) are frozen in
 docs/preprocessing-decisions.md. Metrics: confusion matrix, per-class
 precision/recall/F1. `predict_proba` "confidence" is uncalibrated — caveat in report.
 
+## Preprocessing layer (M2 — verified by tests/, decisions in docs/preprocessing-decisions.md)
+
+`src.preprocessing` public API:
+- `split_features_target(df, task)` — task `"binary"` (y=`is_attack`) or
+  `"multiclass"` (y=`category`). X = the 40 allow-listed features; `label`,
+  `difficulty`, targets, and `num_outbound_cmds` are excluded by construction.
+- `build_preprocessor(scaling=...)` — `"none"` (trees) or `"standard"`
+  (scale-sensitive); MinMax rejected. OneHotEncoder(handle_unknown="ignore") on
+  protocol_type/service/flag; `su_attempted` 2→1 domain repair as a named,
+  joblib-safe step. 121 output features when fitted on the training split.
+- `train_validation_split(df)` — KDDTrain+ only, 80/20, stratified on 5-way
+  `category` (U2R: 42 train / 10 validation), RANDOM_STATE, reproducible.
+
+Rule: fit on the training split only; validation is transformed with the fitted
+object; KDDTest+ untouched (a source-scan test enforces src/preprocessing
+cannot read it). Run the suite with `python -m pytest` (21 tests, ~30 s).
+
 ## API endpoints (contract frozen — docs/api-contract.md)
 
 - `POST /predict` → `{prediction, attack_type, confidence, timestamp}`
@@ -110,7 +129,10 @@ ids/
 ├── notebooks/01_data_exploration.py   (# %% cells)
 ├── src/                   __init__.py · config.py · download_data.py · data_loader.py
 │   │                      (package: run via `python -m src.<module>` from the root)
-│   └── preprocessing|training|evaluation/   (.gitkeep, empty until M2-M4)
+│   ├── preprocessing/     pipeline.py (column roles, build_preprocessor,
+│   │                      su_attempted repair) · split.py (stratified split)
+│   └── training|evaluation/   (.gitkeep, empty until M3-M4)
+├── tests/                 test_preprocessing.py (pytest, ADR-013) + root conftest.py
 ├── api/ · simulator/      (.gitkeep, empty until M5/M7)
 └── dashboard/             (does not exist until M6)
 ```
