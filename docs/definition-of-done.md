@@ -140,47 +140,47 @@ DOCS
 ## Milestone 5 — FastAPI prediction service (contract: docs/api-contract.md)
 
 SERVICE
-- [ ] FastAPI app in api/ (main.py, schemas.py, model_service.py, state.py);
+- [x] FastAPI app in api/ (main.py, schemas.py, model_service.py, state.py);
       Uvicorn starts it; automatic /docs works
-- [ ] models/multiclass_pipeline.joblib + multiclass_metadata.json loaded
+- [x] models/multiclass_pipeline.joblib + multiclass_metadata.json loaded
       exactly ONCE at application startup (never per request); the M3 binary
       artifact is never loaded (ADR-012)
-- [ ] Request schema = the exact 40-feature M2 allow-list, DERIVED from
+- [x] Request schema = the exact 40-feature M2 allow-list, DERIVED from
       src.preprocessing.FEATURE_COLUMNS (single source of truth — cannot
       drift); 3 categorical fields typed str, 37 numeric typed float;
       extra/missing/invalid fields → HTTP 422 (NFR6); unknown categorical
       VALUES pass through safely (M2 handle_unknown="ignore")
-- [ ] POST /predict: ADR-012 mapping (normal → prediction "normal" +
+- [x] POST /predict: ADR-012 mapping (normal → prediction "normal" +
       attack_type null; else "attack" + category), confidence =
       max predict_proba (documented as UNCALIBRATED), API-generated UTC
       timestamp; no preprocessing logic duplicated in API code
-- [ ] GET /stats: total_flows, normal_count, attack_count, attacks_by_type,
+- [x] GET /stats: total_flows, normal_count, attack_count, attacks_by_type,
       per-minute traffic_timeline
-- [ ] GET /predictions/recent?limit=50: newest first, default 50, enforced
+- [x] GET /predictions/recent?limit=50: newest first, default 50, enforced
       maximum, each record = response fields + submitted features
-- [ ] GET /health: status, model_loaded, model_version from the metadata
+- [x] GET /health: status, model_loaded, model_version from the metadata
       artifact (model_name-saved_date); never runs prediction
-- [ ] Bounded in-memory state (ADR-008), documented sizes: last 1,000
+- [x] Bounded in-memory state (ADR-008), documented sizes: last 1,000
       records, 60-minute timeline window, lifetime counters; thread-safe;
       resets on restart (intentional)
-- [ ] CORS restricted to the Vite dev origins (localhost/127.0.0.1:5173),
+- [x] CORS restricted to the Vite dev origins (localhost/127.0.0.1:5173),
       not "*" — documented
 
 VERIFICATION
-- [ ] Dedicated pytest suite: startup, health, all five category mappings,
+- [x] Dedicated pytest suite: startup, health, all five category mappings,
       confidence/timestamp validity, 422 behavior, unknown-categorical
       safety, response schema, stats zero-state + update, recent + limit +
       max-limit, bounded history, single model load, M4-artifact identity,
       M3-not-used, KDDTest+ isolation for api/, error handling
-- [ ] Full suite green (M1-M5); M3/M4 runners unaffected
-- [ ] ACTUAL API latency measured (startup, warm single, repeated) and
+- [x] Full suite green (M1-M5); M3/M4 runners unaffected
+- [x] ACTUAL API latency measured (startup, warm single, repeated) and
       recorded; NFR1 single prediction < 200 ms verified
-- [ ] Manual verification against a running Uvicorn: /health, /predict with
+- [x] Manual verification against a running Uvicorn: /health, /predict with
       a real KDDTrain+ validation row (request-path testing only — never
       model evaluation), /stats, /predictions/recent, /docs
-- [ ] Adversarial audit (malformed input, repeated loading, unbounded
+- [x] Adversarial audit (malformed input, repeated loading, unbounded
       growth, stats consistency, contract drift, CORS, isolation) passed
 
 DOCS
-- [ ] README (run instructions + status), PROJECT_KNOWLEDGE, risk register
+- [x] README (run instructions + status), PROJECT_KNOWLEDGE, risk register
       reviewed; api-contract clarifications recorded if needed

@@ -50,7 +50,10 @@ no websockets (polling), no packet capture (replay simulator).
       HistGradientBoosting on macro F1 + minority-class recall; serialized as the
       production candidate (ADR-012); full results + rationale in
       docs/m4-multiclass-evaluation.md
-- [ ] M5 API → M6 dashboard → M7 simulator/demo → M8 docs → M9 (optional) CICIDS2017
+- [x] M5 prediction API (2026-08-26) — FastAPI service in api/ serving the M4
+      pipeline per the frozen contract; 30 API tests; warm latency 15 ms median
+      (see "API layer" below)
+- [ ] M6 dashboard → M7 simulator/demo → M8 docs → M9 (optional) CICIDS2017
 
 ## Important decisions (full reasoning in docs/DECISIONS.md)
 
@@ -140,7 +143,7 @@ object; KDDTest+ untouched (a source-scan test enforces src/preprocessing
 cannot read it). Run the suite with `python -m pytest` (43 tests, ~10 s;
 the source-scan covers src/preprocessing, src/training and src/evaluation).
 
-## API endpoints (contract frozen — docs/api-contract.md)
+## API layer (M5 — implemented in api/, contract frozen in docs/api-contract.md)
 
 - `POST /predict` → `{prediction, attack_type, confidence, timestamp}`
 - `GET /stats` → counters + attacks_by_type + traffic_timeline
@@ -151,6 +154,22 @@ ADR-012 (approved 2026-08-26): the production `/predict` serves the multi-class
 pipeline ONLY — prediction = "attack" iff category != "normal", attack_type =
 category (null when normal). The binary model stays as the M3 evaluated baseline
 and is never loaded by the API.
+
+Implementation facts (2026-08-26): run with
+`python -m uvicorn api.main:app --port 8000` from the root; /docs is automatic.
+api/schemas.py DERIVES the 40-field request model from
+src.preprocessing.FEATURE_COLUMNS (schema cannot drift from the pipeline);
+extra/missing/non-numeric/NaN fields → 422; unknown categorical values pass
+through safely (M2 handle_unknown="ignore"). api/model_service.py loads the
+joblib + metadata ONCE at startup (lifespan), sets classifier n_jobs=1 and uses
+a single predict_proba pass (argmax == predict, verified; execution-only change
+— predictions byte-identical to the artifact; 137 ms → 15 ms median warm HTTP
+latency, NFR1 < 200 ms). model_version = "<model_name>-<saved_date>" from the
+metadata. api/state.py: bounded thread-safe in-memory state — 1,000-record
+deque, 60-minute "HH:MM"-UTC timeline, lifetime counters; resets on restart by
+design. CORS: only localhost/127.0.0.1:5173 (Vite dev). KDDTest+ isolation
+extends to api/ (test-enforced); the API never reads dataset files at all.
+Tests use FastAPI's TestClient (httpx2) against the real app + artifact.
 
 ## Folder structure
 
@@ -171,9 +190,12 @@ ids/
 │   │                      train_binary.py / train_multiclass.py runners
 │   └── evaluation/        metrics.py (confusion matrix, per-class P/R/F1)
 ├── tests/                 conftest.py (shared fixtures) · test_preprocessing.py ·
-│                          test_training_binary.py · test_training_multiclass.py
-│                          (+ root conftest.py)
-├── api/ · simulator/      (.gitkeep, empty until M5/M7)
+│                          test_training_binary.py · test_training_multiclass.py ·
+│                          test_api.py (+ root conftest.py)
+├── api/                   main.py (app/endpoints/CORS) · schemas.py (Pydantic,
+│                          derived from the M2 allow-list) · model_service.py
+│                          (loads the M4 artifact once) · state.py (bounded history)
+├── simulator/             (.gitkeep, empty until M7)
 └── dashboard/             (does not exist until M6)
 ```
 

@@ -54,7 +54,19 @@ python -m venv .venv
 
 # 4. Run the automated tests
 .\.venv\Scripts\python.exe -m pytest
+
+# 5. Build the production model artifact (M4 pipeline, ~30 s)
+.\.venv\Scripts\python.exe -m src.training.train_multiclass --save random_forest
+
+# 6. Start the prediction API  →  http://localhost:8000/docs
+.\.venv\Scripts\python.exe -m uvicorn api.main:app --port 8000
 ```
+
+The API loads `models/multiclass_pipeline.joblib` once at startup and serves
+the four contract endpoints (`/predict`, `/stats`, `/predictions/recent`,
+`/health`). Prediction history is in-memory and bounded; it resets on restart
+by design. The `confidence` field is the model's maximum class probability and
+is **uncalibrated** — a relative score, not a correctness guarantee.
 
 ## Documentation
 
@@ -68,6 +80,7 @@ python -m venv .venv
 | [docs/data-dictionary.md](docs/data-dictionary.md) | Every dataset column explained |
 | [docs/preprocessing-decisions.md](docs/preprocessing-decisions.md) | Approved M2 preprocessing decisions |
 | [docs/m3-binary-evaluation.md](docs/m3-binary-evaluation.md) | M3 binary model results and selection |
+| [docs/m4-multiclass-evaluation.md](docs/m4-multiclass-evaluation.md) | M4 multi-class results, minority-class analysis, selection |
 
 ## Project status
 
@@ -87,7 +100,10 @@ python -m venv .venv
       (macro F1 0.9500, U2R recall 0.70, 26 missed attacks / 5 false alarms)
       and serialized as the production candidate pipeline (ADR-012);
       KDDTest+ still untouched (2026-08-26)
-- [ ] Milestone 5 — prediction API
+- [x] Milestone 5 — prediction API: FastAPI service over the serialized M4
+      pipeline (ADR-012); 40-feature validated schema, bounded in-memory
+      stats/history, CORS for the Vite dev origin; warm prediction latency
+      15 ms median over real HTTP (NFR1 < 200 ms); 30 API tests (2026-08-26)
 - [ ] Milestone 6 — React dashboard
 - [ ] Milestone 7 — traffic simulator + end-to-end demo
 - [ ] Milestone 8 — final documentation

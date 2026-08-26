@@ -1,14 +1,14 @@
 # Risk Register (living document — statuses reviewed every milestone)
 
-Last reviewed: 2026-08-26 (Milestone 4)
+Last reviewed: 2026-08-26 (Milestone 5)
 
 | ID | Risk | Probability | Impact | Mitigation | Status |
 |----|------|-------------|--------|------------|--------|
 | R1 | Misleading accuracy: imbalanced classes + unseen attack types in KDDTest+ make "99% accuracy" claims false | High | High | evaluate_predictions always emits confusion matrix + per-class recall/F1; M3 doc reports FN/FP counts explicitly and labels all numbers validation-only | Actively mitigated (final honesty check at M8 report) |
-| R2 | Train/serve feature mismatch: API feeds the model differently-shaped data than training | Medium | High | Single serialized sklearn Pipeline used in both places (ADR-005) | Mitigated by design |
+| R2 | Train/serve feature mismatch: API feeds the model differently-shaped data than training | Medium | High | Single serialized sklearn Pipeline used in both places (ADR-005); M5 additionally derives the API request schema from the same FEATURE_COLUMNS constant and tests API-vs-artifact prediction identity | Mitigated by design + tests |
 | R3 | Data leakage: fitting scalers/encoders on test data inflates results | Medium | High | Fit transformers on training split only; binding evaluation protocol below; enforced by M2 automated tests (feature allow-list, transform-without-refit, source-scan proving src/preprocessing cannot read KDDTest+) | Mitigated by design + tests |
 | R4 | Model overfitting to training data | Medium | High | Stratified validation split per the evaluation protocol below; train-vs-validation gap checked each model (M3 and M4: LogReg no gap; RF 1.0000 train vs 0.9988 validation — 0.12 pp; HGB 0.16 pp — none harmful in-distribution); true generalization check = the single KDDTest+ evaluation | Open (monitored) |
-| R5 | React integration friction (frontend tooling eats sessions) | Medium | Medium | API built and tested first (M5 before M6); minimal component set; Recharts | Open |
+| R5 | React integration friction (frontend tooling eats sessions) | Medium | Medium | API built and tested first (M5 done: contract implemented exactly, CORS ready for Vite origin); minimal component set; Recharts | Open (M6 next) |
 | R6 | Dataset corruption / accidental modification of raw files | Low | High | Raw data is read-only by convention: scripts never write to data/raw/; re-downloadable via src/download_data.py | Mitigated by design |
 | R7 | Rare classes (U2R ~50 training samples) perform badly | High | Medium | Acknowledge honestly in evaluation; explain in viva rather than hide. M4 measured it: U2R recall 0.70 / R2L 0.96 on validation (10 and 199 rows — coarse evidence); HGB rejected partly for U2R precision 0.10 | Accepted |
 | R8 | Scope creep (packet capture, deep learning, "real" blocking) | Medium | Medium | Frozen out-of-scope list in requirements.md; changes need a new ADR | Mitigated by design |
