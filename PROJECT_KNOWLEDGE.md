@@ -3,7 +3,7 @@
 Single-file project memory. A new contributor (or a future AI session) should be able
 to work on this project from this file + the docs it links, with zero chat history.
 
-Last updated: 2026-07-28 (after the Milestone-1 external review).
+Last updated: 2026-08-26 (Milestone-1 closeout: review must-fixes applied).
 
 ## What this project is
 
@@ -37,6 +37,10 @@ no websockets (polling), no packet capture (replay simulator).
 - [x] Phase 0 — requirements, API contract, ADRs, risk register, DoD (frozen 2026-07-28)
 - [x] Milestone 1 — skeleton, git, venv, dataset download + EDA, data dictionary (commit 4bc7471)
 - [x] External review of M1 state (5 reviewers + adversarial verification, 2026-07-28) — see "Review outcomes" below
+- [x] M1 closeout (2026-08-26) — ADR-012 approved; src/ is a package (`python -m src.*`);
+      requirements pinned (Python 3.14); RANDOM_STATE=42; evaluation protocol recorded
+      (risk-register.md); M2 preprocessing decisions recorded (docs/preprocessing-decisions.md).
+      Still pending: GitHub remote + milestone-1 tag (user action).
 - [ ] M2 preprocessing pipeline → M3 binary baseline → M4 multi-class + comparison
       → M5 API → M6 dashboard → M7 simulator/demo → M8 docs → M9 (optional) CICIDS2017
 
@@ -46,7 +50,8 @@ ADR-001 NSL-KDD over CICIDS2017 · ADR-002 scikit-learn · ADR-003 FastAPI ·
 ADR-004 React/Vite/Recharts · ADR-005 one serialized Pipeline for train/serve parity ·
 ADR-006 replay simulator, no capture · ADR-007 polling · ADR-008 in-memory bounded
 history · ADR-009 joblib · ADR-010 Phase 0 frozen (changes = new ADRs) ·
-ADR-011 `# %%` .py exploration files, not .ipynb.
+ADR-011 `# %%` .py exploration files, not .ipynb ·
+ADR-012 `/predict` serves the multi-class pipeline only (approved 2026-08-26).
 
 ## Dataset facts (verified against the actual files, 2026-07-28)
 
@@ -63,7 +68,7 @@ ADR-011 `# %%` .py exploration files, not .ipynb.
 - `httptunnel` → U2R mapping is contested in literature (DARPA-1999 says R2L); kept
   as U2R to match canonical NSL-KDD counts. It is 133 of 200 test U2R rows, so U2R
   recall ≈ httptunnel recall.
-- Data re-downloadable via `python src\download_data.py` (row-count integrity check).
+- Data re-downloadable via `python -m src.download_data` (row-count integrity check).
 - Citation owed in report: Tavallaee, Bagheri, Lu, Ghorbani, "A Detailed Analysis of
   the KDD CUP 99 Data Set", IEEE CISDA 2009 (University of New Brunswick).
 
@@ -71,9 +76,14 @@ ADR-011 `# %%` .py exploration files, not .ipynb.
 
 No model trained yet (starts M3). Planned: binary baseline (M3), then multi-class
 comparison of 2-3 algorithms (M4), winner serialized with preprocessing as one
-Pipeline. Evaluation: confusion matrix, per-class precision/recall/F1, on a
-stratified validation split AND official KDDTest+ (touched once, after all choices).
-`predict_proba` "confidence" is uncalibrated — caveat in report.
+Pipeline. Evaluation protocol (binding, full text in docs/risk-register.md):
+all selection/tuning on stratified KDDTrain+ validation/CV — stratified on the
+5-way `category` even for the binary task; KDDTest+ evaluated exactly once after
+all choices are locked; every stochastic step uses `RANDOM_STATE = 42`
+(src/config.py). Preprocessing decisions for M2 (targets, drops, encoding,
+su_attempted 2→1 recode, scaling trade-offs) are frozen in
+docs/preprocessing-decisions.md. Metrics: confusion matrix, per-class
+precision/recall/F1. `predict_proba` "confidence" is uncalibrated — caveat in report.
 
 ## API endpoints (contract frozen — docs/api-contract.md)
 
@@ -82,9 +92,10 @@ stratified validation split AND official KDDTest+ (touched once, after all choic
 - `GET /predictions/recent?limit=50` → feed items (response + submitted features)
 - `GET /health` → `{status, model_loaded, model_version}`
 
-Pending decision (proposed ADR-012, awaiting user approval): serve the multi-class
-pipeline ONLY — prediction = "attack" iff category != "normal"; removes any
-binary/multi-class disagreement; binary model stays as the M3 evaluated baseline.
+ADR-012 (approved 2026-08-26): the production `/predict` serves the multi-class
+pipeline ONLY — prediction = "attack" iff category != "normal", attack_type =
+category (null when normal). The binary model stays as the M3 evaluated baseline
+and is never loaded by the API.
 
 ## Folder structure
 
@@ -94,12 +105,13 @@ ids/
 ├── README.md · requirements.txt · .gitignore
 ├── data/raw|processed/    (gitignored, .gitkeep)
 ├── docs/                  requirements · api-contract · DECISIONS · risk-register ·
-│                          definition-of-done · data-dictionary
+│                          definition-of-done · data-dictionary · preprocessing-decisions
 ├── models/                (.joblib gitignored)
 ├── notebooks/01_data_exploration.py   (# %% cells)
-├── src/                   config.py · download_data.py · data_loader.py
-│   └── preprocessing|training|evaluation/   (empty until M2-M4)
-├── api/ · simulator/      (empty until M5/M7)
+├── src/                   __init__.py · config.py · download_data.py · data_loader.py
+│   │                      (package: run via `python -m src.<module>` from the root)
+│   └── preprocessing|training|evaluation/   (.gitkeep, empty until M2-M4)
+├── api/ · simulator/      (.gitkeep, empty until M5/M7)
 └── dashboard/             (does not exist until M6)
 ```
 
@@ -122,16 +134,17 @@ policy, no timeline/deadline recorded.
 ## Review outcomes (2026-07-28, 11-agent external review, findings verified)
 
 Scores: Cybersecurity 9 · Documentation 9 · ML 8.5 · Code quality 8.5 · Architecture 8.
-No critical defects. Must-fix before M2 (awaiting user approval):
-1. Make src/ a real package (`src/__init__.py`, `from src.config import ...`,
-   `python -m src.download_data`) — flat imports break the moment api/ imports src/ (M5).
-2. Pin requirements.txt versions + state "Python 3.14" + add ipykernel; joblib compat
-   across sklearn versions is why this matters (save-in-M3 → load-in-M5).
-3. ADR-012 (multi-class-only serving, above).
-4. Add `RANDOM_STATE = 42` to config.py; rule: KDDTest+ evaluated once, all
-   selection on stratified validation/CV.
-5. Push to a private GitHub remote; `git tag milestone-1`; commit per logical unit
-   from now on.
+No critical defects. Must-fix before M2 — status at closeout (2026-08-26):
+1. ✅ DONE — src/ is a real package (`src/__init__.py`, `from src.config import ...`,
+   `python -m src.download_data`); notebook imports via project root, no src/-path hack.
+2. ✅ DONE — requirements.txt pinned (pandas 3.0.5, numpy 2.5.1, scikit-learn 1.9.0,
+   matplotlib 3.11.1, joblib 1.5.3, ipykernel 7.3.0); "Python 3.14" stated in
+   README + requirements.txt.
+3. ✅ DONE — ADR-012 approved and recorded in docs/DECISIONS.md.
+4. ✅ DONE — `RANDOM_STATE = 42` in config.py; evaluation protocol (KDDTest+ once,
+   selection on stratified 5-way validation/CV) recorded in risk-register.md.
+5. ⏳ PENDING (user action) — push to a private GitHub remote; `git tag milestone-1`
+   (tracked as risk R10). Commit-per-logical-unit is in effect from the closeout commit.
 Should-fix (M2-M5 windows): dataset citation, IDS-taxonomy paragraph, CORS note,
 OneHotEncoder(handle_unknown='ignore'), tests/ plan + DoD lines, DoD generic-items
 wording, timeline with real demo date, httptunnel/su_attempted notes, model metadata

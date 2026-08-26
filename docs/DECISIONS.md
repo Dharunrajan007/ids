@@ -97,3 +97,23 @@ the user works in VS Code where `# %%` gives the same interactive experience.
 **Alternatives:** .ipynb — richer output storage but noisy diffs and extra dependency.
 **Consequences:** Cell outputs aren't stored in the file; findings that matter are
 written into docs/ instead (which we want anyway).
+
+## ADR-012 — `/predict` serves the multi-class pipeline only (APPROVED 2026-08-26)
+
+**Decision:** The production `POST /predict` endpoint uses ONLY the serialized
+multi-class pipeline. Serving rule: predicted `category == "normal"` →
+`prediction = "normal"`, `attack_type = null`; predicted `category != "normal"` →
+`prediction = "attack"`, `attack_type = <category>`. The binary model built in
+Milestone 3 remains an independently evaluated baseline for learning and model
+comparison; it is never loaded by the API.
+**Reason:** Two independent models answering one question can disagree (binary
+says "attack" while multi-class says "normal"), and the frozen API contract has
+no way to express that. Deriving the binary answer from the multi-class
+prediction makes disagreement structurally impossible and leaves exactly one
+artifact to version, load, and explain (consistent with ADR-005).
+**Alternatives:** Serve both models (rejected: disagreement + two artifacts to
+keep in sync); serve binary only (rejected: the contract requires `attack_type`);
+hierarchical binary-then-category (rejected: more moving parts for no demo value).
+**Consequences:** Milestone 4's model selection determines the single production
+artifact; `/health.model_version` describes the multi-class pipeline; the M3
+binary baseline appears in the evaluation report but is not deployed.

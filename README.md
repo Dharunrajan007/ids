@@ -35,16 +35,20 @@ ids/
 
 ## Setup
 
+Requires **Python 3.14** (requirements.txt is pinned against 3.14.0).
+Run all commands from the project root — `src/` is a package, so scripts are
+executed with `python -m`.
+
 ```powershell
 # 1. Create environment and install dependencies
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 
 # 2. Download the NSL-KDD dataset into data/raw/
-.\.venv\Scripts\python.exe src\download_data.py
+.\.venv\Scripts\python.exe -m src.download_data
 
 # 3. Verify everything loads
-.\.venv\Scripts\python.exe src\data_loader.py
+.\.venv\Scripts\python.exe -m src.data_loader
 ```
 
 ## Documentation
@@ -62,6 +66,8 @@ python -m venv .venv
 
 - [x] Phase 0 — requirements & engineering foundation (frozen 2026-07-28)
 - [x] Milestone 1 — setup, dataset download, exploration
+- [x] Milestone 1 closeout — review must-fixes: ADR-012, src package, pinned
+      deps, seed + evaluation protocol, M2 preprocessing decisions (2026-08-26)
 - [ ] Milestone 2 — preprocessing pipeline
 - [ ] Milestone 3 — binary baseline model + evaluation
 - [ ] Milestone 4 — attack-type classification + model comparison

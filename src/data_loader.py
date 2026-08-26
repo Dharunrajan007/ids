@@ -3,13 +3,13 @@
 Promoted out of the exploration notebook because every later milestone
 (preprocessing, training, the API's test tooling) needs the same loading logic.
 
-Usage as a quick sanity check:
-    python src/data_loader.py
+Usage as a quick sanity check (from the project root):
+    python -m src.data_loader
 """
 
 import pandas as pd
 
-from config import COLUMN_NAMES, TEST_FILE, TRAIN_FILE, label_to_category
+from src.config import COLUMN_NAMES, TEST_FILE, TRAIN_FILE, label_to_category
 
 
 def load_nslkdd(split: str = "train") -> pd.DataFrame:
@@ -28,7 +28,7 @@ def load_nslkdd(split: str = "train") -> pd.DataFrame:
 
     if not path.exists():
         raise FileNotFoundError(
-            f"{path} not found. Run 'python src/download_data.py' first."
+            f"{path} not found. Run 'python -m src.download_data' first."
         )
 
     df = pd.read_csv(path, names=COLUMN_NAMES)

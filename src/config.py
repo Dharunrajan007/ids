@@ -17,6 +17,13 @@ MODELS_DIR = PROJECT_ROOT / "models"
 TRAIN_FILE = DATA_RAW / "KDDTrain+.txt"
 TEST_FILE = DATA_RAW / "KDDTest+.txt"
 
+# --- Reproducibility ------------------------------------------------------
+
+# Project-wide random seed (Milestone-1 review must-fix). Every stochastic
+# step in M2-M4 — train/validation splits, cross-validation, model seeds —
+# must use this value so results are reproducible run-to-run.
+RANDOM_STATE = 42
+
 # --- Dataset schema ------------------------------------------------------
 
 # NSL-KDD files have no header row. These are the 41 features in file order,

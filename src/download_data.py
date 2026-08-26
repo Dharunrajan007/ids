@@ -4,14 +4,14 @@ Repeatable by design (risk R6): if the raw files are ever corrupted or
 deleted, running this script restores them. Uses only the standard library
 so it works before ML dependencies are installed.
 
-Usage:
-    python src/download_data.py
+Usage (from the project root):
+    python -m src.download_data
 """
 
 import urllib.request
 from pathlib import Path
 
-from config import DATA_RAW, TRAIN_FILE, TEST_FILE
+from src.config import DATA_RAW, TRAIN_FILE, TEST_FILE
 
 # Mirror of the official NSL-KDD distribution (University of New Brunswick).
 BASE_URL = "https://raw.githubusercontent.com/defcom17/NSL_KDD/master"

@@ -1,8 +1,16 @@
-# Milestone 1-4: data + ML
-pandas
-numpy
-scikit-learn
-matplotlib
+# Supported Python: 3.14 (versions below verified against Python 3.14.0).
+# Pinned exactly so a fresh environment reproduces the verified one — and so
+# joblib artifacts saved under this scikit-learn version load reliably later.
+
+# Milestones 1-4: data + ML
+pandas==3.0.5
+numpy==2.5.1
+scikit-learn==1.9.0
+matplotlib==3.11.1
+joblib==1.5.3
+
+# Notebook workflow: VS Code "# %%" cell execution (ADR-011)
+ipykernel==7.3.0
 
 # Milestone 5+ (API) will add: fastapi, uvicorn
 # kept out for now so early setup stays fast

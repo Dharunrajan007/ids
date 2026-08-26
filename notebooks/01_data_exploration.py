@@ -7,16 +7,21 @@
 # Goal: understand what's in the dataset before we preprocess anything.
 # Findings that matter long-term are recorded in docs/data-dictionary.md.
 
-# %% Setup — make src/ importable from the notebooks folder
+# %% Setup — make the project root importable so `src.*` package imports work
+# both when this file runs as a plain script and when VS Code's interactive
+# window runs cells with a different working directory. Modules are always
+# imported under their canonical `src.` names (no duplicate-module identities).
 import sys
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).resolve().parent.parent / "src"))
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from data_loader import load_nslkdd
+from src.data_loader import load_nslkdd
 
 pd.set_option("display.max_columns", 50)
 
