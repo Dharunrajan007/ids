@@ -1,0 +1,135 @@
+{
+  "task": "multiclass (normal/dos/probe/r2l/u2r)",
+  "role": "M4 selected model \u2014 the production candidate: per ADR-012 the M5 /predict endpoint serves THIS pipeline (prediction = 'attack' iff category != 'normal')",
+  "model_name": "random_forest",
+  "classes": [
+    "dos",
+    "normal",
+    "probe",
+    "r2l",
+    "u2r"
+  ],
+  "saved_date": "2026-08-26",
+  "python_version": "3.14.0",
+  "sklearn_version": "1.9.0",
+  "random_state": 42,
+  "classifier_params": {
+    "bootstrap": true,
+    "ccp_alpha": 0.0,
+    "class_weight": null,
+    "criterion": "gini",
+    "max_depth": null,
+    "max_features": "sqrt",
+    "max_leaf_nodes": null,
+    "max_samples": null,
+    "min_impurity_decrease": 0.0,
+    "min_samples_leaf": 1,
+    "min_samples_split": 2,
+    "min_weight_fraction_leaf": 0.0,
+    "monotonic_cst": null,
+    "n_estimators": 100,
+    "n_jobs": -1,
+    "oob_score": false,
+    "random_state": 42,
+    "verbose": 0,
+    "warm_start": false
+  },
+  "training_rows": 100778,
+  "validation_rows": 25195,
+  "n_features_out": 121,
+  "train_accuracy": 0.999960308797555,
+  "validation_metrics": {
+    "labels": [
+      "normal",
+      "dos",
+      "probe",
+      "r2l",
+      "u2r"
+    ],
+    "accuracy": 0.9987695971422902,
+    "confusion_matrix": [
+      [
+        13464,
+        2,
+        1,
+        1,
+        1
+      ],
+      [
+        1,
+        9185,
+        0,
+        0,
+        0
+      ],
+      [
+        14,
+        0,
+        2317,
+        0,
+        0
+      ],
+      [
+        8,
+        0,
+        0,
+        191,
+        0
+      ],
+      [
+        3,
+        0,
+        0,
+        0,
+        7
+      ]
+    ],
+    "per_class": {
+      "normal": {
+        "precision": 0.9980726464047442,
+        "recall": 0.9996287771920707,
+        "f1-score": 0.9988501057160873,
+        "support": 13469.0
+      },
+      "dos": {
+        "precision": 0.9997823010776097,
+        "recall": 0.9998911386893098,
+        "f1-score": 0.9998367169215697,
+        "support": 9186.0
+      },
+      "probe": {
+        "precision": 0.9995685936151855,
+        "recall": 0.993993993993994,
+        "f1-score": 0.99677349967735,
+        "support": 2331.0
+      },
+      "r2l": {
+        "precision": 0.9947916666666666,
+        "recall": 0.9597989949748744,
+        "f1-score": 0.9769820971867008,
+        "support": 199.0
+      },
+      "u2r": {
+        "precision": 0.875,
+        "recall": 0.7,
+        "f1-score": 0.7777777777777778,
+        "support": 10.0
+      }
+    },
+    "macro_avg": {
+      "precision": 0.9734430415528411,
+      "recall": 0.9306625809700497,
+      "f1-score": 0.9500440394558971,
+      "support": 25195.0
+    },
+    "weighted_avg": {
+      "precision": 0.9987596199844448,
+      "recall": 0.9987695971422902,
+      "f1-score": 0.9987572295454399,
+      "support": 25195.0
+    }
+  },
+  "train_seconds": 4.7,
+  "artifact": "multiclass_pipeline.joblib",
+  "single_flow_ms": 38.9
+}

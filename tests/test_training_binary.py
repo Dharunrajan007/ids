@@ -22,15 +22,7 @@ from src.training.binary import (
     majority_baseline,
 )
 
-# --- Fixtures -------------------------------------------------------------
-
-
-@pytest.fixture(scope="session")
-def sample_frames(split_frames):
-    """Small stratified sample: up to 400 rows per category from the training
-    split (all 5 categories represented), 1,000 validation rows."""
-    train_df, val_df = split_frames
-    return train_df.groupby("category").head(400), val_df.head(1000)
+# --- Fixtures (sample_frames comes from tests/conftest.py) ----------------
 
 
 @pytest.fixture(scope="session")
