@@ -33,6 +33,12 @@ class ModelService:
                 f"{model_file} not found. Build it first: "
                 "python -m src.training.train_multiclass --save random_forest")
         self.pipeline = joblib.load(model_file)
+        # Serving-time execution tuning, NOT a model change: n_jobs=-1 helps
+        # big batches but costs ~40 ms of thread fan-out on a single row —
+        # measured 49 ms -> 10 ms per predict_proba with byte-identical
+        # probabilities. n_jobs only chooses how many threads compute the
+        # same trees, so predictions cannot change.
+        self.pipeline.named_steps["classifier"].set_params(n_jobs=1)
         with open(metadata_file, encoding="utf-8") as handle:
             self.metadata = json.load(handle)
         # /health.model_version: which model, trained when — straight from
@@ -48,10 +54,17 @@ class ModelService:
         the dict's key order.
         """
         frame = pd.DataFrame([features], columns=FEATURE_COLUMNS)
-        category = self.pipeline.predict(frame)[0]
+        # ONE pipeline pass, not two: predict() would rerun preprocessing and
+        # all 100 trees just to argmax the same probabilities (sklearn's
+        # ClassifierMixin.predict IS classes_[argmax(predict_proba)], first
+        # class winning ties in both). Halves request latency; identical
+        # output by construction.
+        probabilities = self.pipeline.predict_proba(frame)[0]
+        category = self.pipeline.named_steps["classifier"].classes_[
+            probabilities.argmax()]
         # Max class probability = the Random Forest's vote fraction for the
         # winning class. UNCALIBRATED — documented caveat since M1.
-        confidence = float(self.pipeline.predict_proba(frame)[0].max())
+        confidence = float(probabilities.max())
         if category == "normal":
             return "normal", None, confidence
         return "attack", category, confidence
