@@ -3,7 +3,8 @@
 Single-file project memory. A new contributor (or a future AI session) should be able
 to work on this project from this file + the docs it links, with zero chat history.
 
-Last updated: 2026-08-26 (Milestone 4 complete: production multi-class model = Random Forest).
+Last updated: 2026-08-27 (Milestone 8 complete — PROJECT COMPLETE; KDDTest+
+evaluated exactly once, results locked in models/final_test_metrics.json).
 
 ## What this project is
 
@@ -76,8 +77,18 @@ no websockets (polling), no packet capture (replay simulator).
       failures, API 88 ms mid-replay, history bounded). Run:
       `python -m simulator.run`. Wording rule: "simulated traffic replay
       through the same prediction API path", never "live network detection".
-- [ ] M8 final locked KDDTest+ evaluation (exactly once) + final docs/viva
-      → M9 (optional) CICIDS2017
+- [x] M8 FINAL (2026-08-27) — the once-only locked KDDTest+ evaluation ran
+      via scripts/run_final_evaluation.py (outside the guarded packages; it
+      refuses to re-run while models/final_test_metrics.json exists).
+      LOCKED RESULTS (22,544 rows): accuracy 0.7446 · macro F1 0.4848 ·
+      binary attack recall 0.5913 (5,245 missed) · 251 false alarms ·
+      r2l recall 0.0272 · u2r recall 0.0150. Decomposition: known-type
+      attacks 76.1% detected, test-only types 18.0%; R2L failed even on
+      known types (guess_passwd 1,231 test vs 42 train rows; warezmaster
+      944 vs 15). Full analysis docs/m8-final-evaluation.md; viva Q&A in
+      docs/viva-preparation.md. PROJECT COMPLETE — only optional M9 remains.
+- [ ] M9 (optional) — e.g. CICIDS2017, probability calibration, anomaly
+      detection complement
 
 ## Important decisions (full reasoning in docs/DECISIONS.md)
 

@@ -278,49 +278,49 @@ DOCS
 ## Milestone 8 — final locked evaluation + documentation + viva prep (FINAL)
 
 READINESS (verified by execution before the locked evaluation)
-- [ ] Full M1-M7 suite green; working tree clean; KDDTest+ integrity
+- [x] Full M1-M7 suite green; working tree clean; KDDTest+ integrity
       re-verified (22,544 rows); production artifact reproduces its stored
       M4 validation metrics exactly on reload (unmodified-artifact proof
       that touches no test data); docs consistent; no blockers
 
 LOCKED EVALUATION — the once-only KDDTest+ read for scoring
-- [ ] Runner lives in scripts/ (OUTSIDE the guarded src/training,
+- [x] Runner lives in scripts/ (OUTSIDE the guarded src/training,
       src/evaluation, src/preprocessing and api/ packages, whose
       KDDTest+-isolation scans stay in force unchanged)
-- [ ] Loads the SERIALIZED pipeline only — no fit(), no tuning, no
+- [x] Loads the SERIALIZED pipeline only — no fit(), no tuning, no
       selection, no preprocessing changes; predicts all 22,544 rows once;
       metrics computed with the existing evaluate_predictions
-- [ ] Recorded: accuracy, 5x5 confusion matrix, per-class P/R/F1,
+- [x] Recorded: accuracy, 5x5 confusion matrix, per-class P/R/F1,
       macro/weighted F1, binary IDS view (missed attacks / false alarms),
       throughput; results saved to models/final_test_metrics.json and
       docs/m8-final-evaluation.md and treated as LOCKED — the model is not
       changed in response, and no second scoring read happens
-- [ ] Validation-vs-test comparison written honestly: effect of the 17
+- [x] Validation-vs-test comparison written honestly: effect of the 17
       test-only attack types, R2L/U2R imbalance, poor numbers NOT hidden
 
 FINAL AUDITS
-- [ ] Leakage/isolation audit re-run: forbidden columns excluded by
+- [x] Leakage/isolation audit re-run: forbidden columns excluded by
       construction (tests), KDDTest+ unreadable by guarded packages
       (source-scan tests), API/simulator/dashboard carry no ground truth
       (tests + UI scan), unknown categoricals safe, 422 validation intact,
       uncalibrated-confidence wording present, replay-only simulator, no
       IPS/blocking anywhere
-- [ ] Performance re-measured (not quoted): model load, single-flow
+- [x] Performance re-measured (not quoted): model load, single-flow
       latency, real-HTTP API latency (NFR1 < 200 ms), simulator throughput
-- [ ] Final adversarial review (claims vs code, terminology, hidden
+- [x] Final adversarial review (claims vs code, terminology, hidden
       test-set usage, reproducibility) with findings resolved
 
 DOCS + VIVA + DEMO
-- [ ] docs/m8-final-evaluation.md: executive summary, architecture, frozen
+- [x] docs/m8-final-evaluation.md: executive summary, architecture, frozen
       model, protocol, validation + final results, comparison,
       minority-class analysis, leakage verification, performance, known
       limitations, conclusion, reproduction/demo instructions, dataset
       citation
-- [ ] docs/viva-preparation.md: the 42 agreed questions answered
+- [x] docs/viva-preparation.md: the 42 agreed questions answered
       (simple-first, then technical)
-- [ ] README, PROJECT_KNOWLEDGE, risk register brought to final state
-- [ ] Full end-to-end demo rehearsed against the real stack and verified in
+- [x] README, PROJECT_KNOWLEDGE, risk register brought to final state
+- [x] Full end-to-end demo rehearsed against the real stack and verified in
       a browser (counters, alerts, details, caveat, failure banner, no
       ground truth, no console errors)
-- [ ] Full suite green at close; working tree clean; every M8 commit
+- [x] Full suite green at close; working tree clean; every M8 commit
       logical and explained

@@ -87,6 +87,8 @@ is **uncalibrated** — a relative score, not a correctness guarantee.
 | [docs/preprocessing-decisions.md](docs/preprocessing-decisions.md) | Approved M2 preprocessing decisions |
 | [docs/m3-binary-evaluation.md](docs/m3-binary-evaluation.md) | M3 binary model results and selection |
 | [docs/m4-multiclass-evaluation.md](docs/m4-multiclass-evaluation.md) | M4 multi-class results, minority-class analysis, selection |
+| [docs/m8-final-evaluation.md](docs/m8-final-evaluation.md) | FINAL locked KDDTest+ results, comparison, conclusion |
+| [docs/viva-preparation.md](docs/viva-preparation.md) | Viva Q&A (42 questions, simple-first answers) |
 
 ## Project status
 
@@ -123,4 +125,9 @@ is **uncalibrated** — a relative score, not a correctness guarantee.
       single-request sending, clean failure/Ctrl+C handling; 13 mocked-HTTP
       tests; full simulator→API→dashboard demo verified live in a headless
       browser (2026-08-27)
-- [ ] Milestone 8 — final documentation
+- [x] Milestone 8 — FINAL: locked KDDTest+ evaluation (exactly once,
+      2026-08-27) — accuracy 0.7446, macro F1 0.4848, binary attack recall
+      0.5913 vs 0.9978 on validation; the honest generalization boundary of
+      misuse detection, analyzed in docs/m8-final-evaluation.md; final
+      leakage audit, measured performance (API 33 ms median), viva prep,
+      demo rehearsed. PROJECT COMPLETE (2026-08-27)
