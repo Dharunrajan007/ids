@@ -41,7 +41,7 @@ no websockets (polling), no packet capture (replay simulator).
 - [x] M1 closeout (2026-08-26) — ADR-012 approved; src/ is a package (`python -m src.*`);
       requirements pinned (Python 3.14); RANDOM_STATE=42; evaluation protocol recorded
       (risk-register.md); M2 preprocessing decisions recorded (docs/preprocessing-decisions.md).
-      Still pending: GitHub remote + milestone-1 tag (user action).
+      GitHub remote + milestone tags done 2026-08-27 (github.com/Dharunrajan007/ids, private).
 - [x] M2 preprocessing pipeline (2026-08-26) — `src/preprocessing/` package + 21-test
       pytest suite (ADR-013); DoD checklist complete; see "Preprocessing layer" below
 - [x] M3 binary baseline (2026-08-26) — Random Forest selected over LogReg and
@@ -254,8 +254,7 @@ ids/
 
 R1 misleading accuracy · R3 leakage (fit on train only) · R4 overfitting (stratified
 CV) · R5 React friction · R7 U2R rarity (accepted) · R9 demo-day breakage.
-Review added: no git remote (single-laptop copy), unpinned dependencies, no seed
-policy, no timeline/deadline recorded.
+Review-added risks all resolved except: no timeline/deadline recorded.
 
 ## Review outcomes (2026-07-28, 11-agent external review, findings verified)
 
@@ -269,8 +268,8 @@ No critical defects. Must-fix before M2 — status at closeout (2026-08-26):
 3. ✅ DONE — ADR-012 approved and recorded in docs/DECISIONS.md.
 4. ✅ DONE — `RANDOM_STATE = 42` in config.py; evaluation protocol (KDDTest+ once,
    selection on stratified 5-way validation/CV) recorded in risk-register.md.
-5. ⏳ PENDING (user action) — push to a private GitHub remote; `git tag milestone-1`
-   (tracked as risk R10). Commit-per-logical-unit is in effect from the closeout commit.
+5. ✅ DONE (2026-08-27) — private remote github.com/Dharunrajan007/ids; tags
+   milestone-1..8 pushed (risk R10 closed). Commit-per-logical-unit in effect.
 Should-fix (M2-M5 windows): dataset citation, IDS-taxonomy paragraph, CORS note,
 OneHotEncoder(handle_unknown='ignore'), tests/ plan + DoD lines, DoD generic-items
 wording, timeline with real demo date, httptunnel/su_attempted notes, model metadata

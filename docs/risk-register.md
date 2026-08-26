@@ -13,7 +13,7 @@ Last reviewed: 2026-08-27 (Milestone 8 — FINAL; project complete)
 | R7 | Rare classes (U2R ~50 training samples) perform badly | High | Medium | Acknowledged and measured to the end: final U2R recall 0.0150, R2L 0.0272 (unseen types + 15-42-row known types); full decomposition in docs/m8-final-evaluation.md §10; viva answer prepared | Accepted (materialized as predicted, honestly reported) |
 | R8 | Scope creep (packet capture, deep learning, "real" blocking) | Medium | Medium | Frozen out-of-scope list in requirements.md; changes need a new ADR | Mitigated by design |
 | R9 | Demo-day failure (dependency/env breakage on presentation machine) | Low | High | README-only setup (NFR3); full simulator→API→dashboard rehearsal done at M7 (320 flows, zero failures); no internet needed during demo (NFR2). Re-rehearse on the actual presentation machine before the viva | Mitigated (final rehearsal pending) |
-| R10 | Single-copy repository: no git remote, whole project lives on one laptop | Medium | High | Push to a private GitHub remote + tag milestones (Milestone-1 review must-fix; pending user action) | Open |
+| R10 | Single-copy repository: no git remote, whole project lives on one laptop | Medium | High | Pushed to private remote github.com/Dharunrajan007/ids with milestone-1..8 tags (2026-08-27) | Closed |
 
 ## Evaluation protocol (binding rule — recorded at Milestone-1 closeout, 2026-08-26)
 
