@@ -44,28 +44,29 @@ Generic items apply to all milestones; specific items are added when the milesto
 
 ## Milestone 3 — binary baseline model
 
-- [ ] Majority-class baseline computed on the validation split: accuracy,
+- [x] Majority-class baseline computed on the validation split: accuracy,
       meaningful per-class metrics, confusion matrix — the reference floor
-- [ ] LogisticRegression pipeline = `build_preprocessor(scaling="standard")` +
+- [x] LogisticRegression pipeline = `build_preprocessor(scaling="standard")` +
       classifier, `RANDOM_STATE`, sensible default config, trained on the
       100,778-row training split ONLY
-- [ ] RandomForest pipeline = `build_preprocessor(scaling="none")` + classifier,
+- [x] RandomForest pipeline = `build_preprocessor(scaling="none")` + classifier,
       `RANDOM_STATE`, sensible default config, same training split
-- [ ] All evaluation on the 25,195-row validation split ONLY: confusion matrix,
+- [x] All evaluation on the 25,195-row validation split ONLY: confusion matrix,
       accuracy, per-class precision/recall/F1, macro + weighted averages,
       training/prediction times
-- [ ] Comparison table (baseline + both models) and a documented selection
+- [x] Comparison table (baseline + both models) and a documented selection
       decision based on validation performance and IDS priorities (attack recall
       weighed against false positives) — never accuracy alone, never KDDTest+
-- [ ] Selected pipeline serialized with joblib as ONE artifact (preprocessing +
+      → Random Forest selected (docs/m3-binary-evaluation.md)
+- [x] Selected pipeline serialized with joblib as ONE artifact (preprocessing +
       classifier) in models/, with a metadata file (model type, date, versions,
       configuration, validation metrics)
-- [ ] Reload verified: artifact loads, predicts on validation samples, output is
-      binary, predictions identical to pre-save
-- [ ] pytest tests: pipeline construction, training + prediction, binary output
+- [x] Reload verified: artifact loads, predicts on validation samples, output is
+      binary, predictions identical to pre-save (all 25,195 rows)
+- [x] pytest tests: pipeline construction, training + prediction, binary output
       domain, no invalid outputs, save/reload consistency, KDDTest+ source-scan
-      isolation for src/training + src/evaluation
-- [ ] Leakage audit passed and reproducibility demonstrated: two runs →
-      identical metrics
-- [ ] Docs updated: M3 results doc, README status, PROJECT_KNOWLEDGE, risk
-      register review; NFR1 timing recorded
+      isolation for src/training + src/evaluation — 31 tests passing
+- [x] Leakage audit passed and reproducibility demonstrated: two runs →
+      identical metrics (diff excluding timing lines)
+- [x] Docs updated: M3 results doc, README status, PROJECT_KNOWLEDGE, risk
+      register review; NFR1 timing recorded (train 14.7 s, predict ≪ 200 ms)

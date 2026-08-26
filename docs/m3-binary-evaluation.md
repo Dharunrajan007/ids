@@ -74,8 +74,11 @@ weighed against false positives, never accuracy alone, never KDDTest+.
 - Random Forest wins on **both** IDS priorities simultaneously: 16× fewer
   missed attacks (26 vs 415) *and* 50× fewer false alarms (5 vs 251) — there
   is no trade-off to arbitrate; it dominates every recorded metric.
-- Cost is acceptable: 14.7 s training (NFR1 allows 10 min), 0.011 ms/flow
-  prediction (NFR1 allows 200 ms), 8.3 MB artifact.
+- Cost is acceptable: 14.7 s training (NFR1 allows 10 min), 0.011 ms/flow in
+  batch and **78.8 ms for a single flow** through the reloaded artifact
+  (NFR1 allows 200 ms; the single-flow cost is dominated by the forest's
+  n_jobs=-1 parallel dispatch — a useful datum for the M4 production model,
+  where single-flow serving latency actually matters). Artifact 8.3 MB.
 - Logistic regression is NOT discarded from the project narrative: it is the
   explainable linear reference and confirms the task is largely, but not
   perfectly, linearly separable (97.4%).

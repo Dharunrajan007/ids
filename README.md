@@ -24,8 +24,8 @@ ids/
 │   ├── data_loader.py     loads NSL-KDD with proper column names
 │   ├── preprocessing/     feature/target separation, encoding, scaling,
 │   │                      stratified train/validation split (Milestone 2)
-│   ├── training/          (Milestones 3-4)
-│   └── evaluation/        (Milestones 3-4)
+│   ├── training/          binary.py + train_binary.py runner (M3); multi-class (M4)
+│   └── evaluation/        metrics.py — confusion matrix + per-class P/R/F1
 ├── tests/         automated verification (pytest — see step 4 below)
 ├── models/        saved model artifacts (gitignored)
 ├── api/           FastAPI prediction service (Milestone 5)
@@ -66,6 +66,8 @@ python -m venv .venv
 | [docs/risk-register.md](docs/risk-register.md) | Living risk table, updated each milestone |
 | [docs/definition-of-done.md](docs/definition-of-done.md) | Completion checklist per milestone |
 | [docs/data-dictionary.md](docs/data-dictionary.md) | Every dataset column explained |
+| [docs/preprocessing-decisions.md](docs/preprocessing-decisions.md) | Approved M2 preprocessing decisions |
+| [docs/m3-binary-evaluation.md](docs/m3-binary-evaluation.md) | M3 binary model results and selection |
 
 ## Project status
 
@@ -76,7 +78,10 @@ python -m venv .venv
 - [x] Milestone 2 — preprocessing pipeline: leakage-safe feature/target
       separation, encoding, scaling variants, stratified validation split,
       pytest suite (2026-08-26)
-- [ ] Milestone 3 — binary baseline model + evaluation
+- [x] Milestone 3 — binary baseline model: majority baseline vs LogReg vs
+      Random Forest on the stratified validation split; RF selected (attack
+      recall 0.9978, 5 false positives) and serialized with its preprocessing
+      as one pipeline; KDDTest+ untouched (2026-08-26)
 - [ ] Milestone 4 — attack-type classification + model comparison
 - [ ] Milestone 5 — prediction API
 - [ ] Milestone 6 — React dashboard

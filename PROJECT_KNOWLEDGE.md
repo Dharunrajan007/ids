@@ -3,7 +3,7 @@
 Single-file project memory. A new contributor (or a future AI session) should be able
 to work on this project from this file + the docs it links, with zero chat history.
 
-Last updated: 2026-08-26 (Milestone 2 complete: preprocessing + validation foundation).
+Last updated: 2026-08-26 (Milestone 3 complete: binary baseline = Random Forest).
 
 ## What this project is
 
@@ -43,7 +43,10 @@ no websockets (polling), no packet capture (replay simulator).
       Still pending: GitHub remote + milestone-1 tag (user action).
 - [x] M2 preprocessing pipeline (2026-08-26) — `src/preprocessing/` package + 21-test
       pytest suite (ADR-013); DoD checklist complete; see "Preprocessing layer" below
-- [ ] M3 binary baseline → M4 multi-class + comparison → M5 API → M6 dashboard
+- [x] M3 binary baseline (2026-08-26) — Random Forest selected over LogReg and
+      majority baseline on the validation split; serialized as one pipeline;
+      full results + rationale in docs/m3-binary-evaluation.md
+- [ ] M4 multi-class + comparison → M5 API → M6 dashboard
       → M7 simulator/demo → M8 docs → M9 (optional) CICIDS2017
 
 ## Important decisions (full reasoning in docs/DECISIONS.md)
@@ -76,9 +79,21 @@ ADR-012 `/predict` serves the multi-class pipeline only (approved 2026-08-26).
 
 ## Model facts
 
-No model trained yet (starts M3). Planned: binary baseline (M3), then multi-class
-comparison of 2-3 algorithms (M4), winner serialized with preprocessing as one
-Pipeline. Evaluation protocol (binding, full text in docs/risk-register.md):
+**M3 binary baseline (done, 2026-08-26 — full numbers in docs/m3-binary-evaluation.md):**
+Random Forest (100 trees, defaults, RANDOM_STATE) selected. Validation:
+accuracy 0.9988, attack recall 0.9978 (26 FN), attack precision 0.9996 (5 FP),
+macro F1 0.9988 — vs LogisticRegression 0.9736 acc (415 FN / 251 FP) and
+majority baseline 0.5346 acc (catches nothing). Artifact:
+models/binary_pipeline.joblib (8.3 MB, preprocessor+classifier in ONE pipeline)
++ binary_metadata.json; reload reproduces all 25,195 validation predictions
+exactly; metrics identical across two full runs. Train 14.7 s (NFR1 ok).
+Role per ADR-012: evaluated baseline only — never served by the API.
+Validation contains only training-known attack types; KDDTest+ (17 unseen
+types) stays untouched until the final locked evaluation and WILL score lower.
+
+M4 next: multi-class comparison of 2-3 algorithms, winner serialized with
+preprocessing as one Pipeline → becomes the production model.
+Evaluation protocol (binding, full text in docs/risk-register.md):
 all selection/tuning on stratified KDDTrain+ validation/CV — stratified on the
 5-way `category` even for the binary task; KDDTest+ evaluated exactly once after
 all choices are locked; every stochastic step uses `RANDOM_STATE = 42`
@@ -131,8 +146,10 @@ ids/
 │   │                      (package: run via `python -m src.<module>` from the root)
 │   ├── preprocessing/     pipeline.py (column roles, build_preprocessor,
 │   │                      su_attempted repair) · split.py (stratified split)
-│   └── training|evaluation/   (.gitkeep, empty until M3-M4)
-├── tests/                 test_preprocessing.py (pytest, ADR-013) + root conftest.py
+│   ├── training/          binary.py (pipelines + baseline) · train_binary.py runner
+│   └── evaluation/        metrics.py (confusion matrix, per-class P/R/F1)
+├── tests/                 conftest.py (shared fixtures) · test_preprocessing.py ·
+│                          test_training_binary.py (+ root conftest.py)
 ├── api/ · simulator/      (.gitkeep, empty until M5/M7)
 └── dashboard/             (does not exist until M6)
 ```
