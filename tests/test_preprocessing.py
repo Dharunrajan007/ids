@@ -14,7 +14,6 @@ from scipy import sparse
 from sklearn.preprocessing import StandardScaler
 
 import src.preprocessing as preprocessing_pkg
-from src.data_loader import load_nslkdd
 from src.preprocessing import (
     DROPPED_FEATURES,
     FEATURE_COLUMNS,
@@ -25,17 +24,7 @@ from src.preprocessing import (
     train_validation_split,
 )
 
-# --- Shared fixtures ------------------------------------------------------
-
-
-@pytest.fixture(scope="session")
-def train_frame():
-    return load_nslkdd("train")
-
-
-@pytest.fixture(scope="session")
-def split_frames(train_frame):
-    return train_validation_split(train_frame)
+# --- Fixtures (train_frame / split_frames come from tests/conftest.py) ----
 
 
 @pytest.fixture(scope="session")
