@@ -68,4 +68,9 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        # Ctrl+C during startup/wait_for_api (the replay loop handles its
+        # own) — exit quietly instead of dumping a traceback mid-demo.
+        print("\nstopped")

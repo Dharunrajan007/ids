@@ -63,6 +63,9 @@ python -m venv .venv
 
 # 7. Start the dashboard (needs Node.js; run in a second terminal)
 cd dashboard; npm install; npm run dev   # → http://localhost:5173
+
+# 8. Replay simulated traffic through the API (third terminal; Ctrl+C to stop)
+.\.venv\Scripts\python.exe -m simulator.run          # 300 flows @ 1.5/s
 ```
 
 The API loads `models/multiclass_pipeline.joblib` once at startup and serves
@@ -113,5 +116,11 @@ is **uncalibrated** — a relative score, not a correctness guarantee.
       uncalibrated-confidence caveat; disconnect/empty states handled;
       14 vitest unit tests + 15 live headless-browser integration checks
       against the real API (2026-08-26)
-- [ ] Milestone 7 — traffic simulator + end-to-end demo
+- [x] Milestone 7 — traffic simulator + end-to-end demo: simulator/ replays
+      KDDTest+ rows through POST /predict (simulated traffic replay via the
+      same prediction API path — not live capture, not evaluation; labels
+      never leave the process); configurable rate/rows/duration, paced
+      single-request sending, clean failure/Ctrl+C handling; 13 mocked-HTTP
+      tests; full simulator→API→dashboard demo verified live in a headless
+      browser (2026-08-27)
 - [ ] Milestone 8 — final documentation

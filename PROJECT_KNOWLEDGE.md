@@ -64,7 +64,20 @@ no websockets (polling), no packet capture (replay simulator).
       via headless Edge (playwright-core) — 15 integration checks incl.
       polling cadence, disconnect recovery, 680px responsive. Run:
       `cd dashboard && npm install && npm run dev` (API must be on :8000).
-- [ ] M7 simulator/demo → M8 docs → M9 (optional) CICIDS2017
+- [x] M7 traffic simulator + end-to-end demo (2026-08-27) — simulator/ replays
+      KDDTest+ rows through POST /predict at a configurable pace (default 300
+      rows @ 1.5/s, seeded shuffle for a mixed demo; --sequential available).
+      Payloads are built strictly from FEATURE_COLUMNS: label/difficulty/
+      is_attack/category NEVER transmitted (test-enforced), no model import,
+      no metric computed — KDDTest+ was replay input only; the once-only
+      locked evaluation remains reserved for M8. Fault handling: API-down →
+      retry same row; timeout → skip (no duplicate risk); 422/5xx counted;
+      Ctrl+C clean. 13 mocked-HTTP tests; live demo verified (320 flows, zero
+      failures, API 88 ms mid-replay, history bounded). Run:
+      `python -m simulator.run`. Wording rule: "simulated traffic replay
+      through the same prediction API path", never "live network detection".
+- [ ] M8 final locked KDDTest+ evaluation (exactly once) + final docs/viva
+      → M9 (optional) CICIDS2017
 
 ## Important decisions (full reasoning in docs/DECISIONS.md)
 
@@ -211,7 +224,9 @@ ids/
 │                          TimelineChart, AttackTypesChart, LiveFeed,
 │                          AlertsList, DetailPanel) · hooks/usePolling.js ·
 │                          services/api.js · utils/format.js (+ vitest tests)
-├── simulator/             (.gitkeep, empty until M7)
+├── simulator/             replay.py (payload allow-list, paced loop, fault
+│                          handling — pure/testable) · client.py (httpx2
+│                          transport, the ONLY model access path) · run.py CLI
 └── dashboard/             (does not exist until M6)
 ```
 

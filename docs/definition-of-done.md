@@ -235,42 +235,42 @@ DOCS
 
 SIMULATOR — simulated traffic replay through the same prediction API path
 (never to be called "live network detection")
-- [ ] simulator/ package: reads KDDTest+ rows via the existing loader
+- [x] simulator/ package: reads KDDTest+ rows via the existing loader
       WITHOUT modifying them, and sends ONLY the 40-feature M2 allow-list
       (payload built from src.preprocessing.FEATURE_COLUMNS — never a
       hand-typed field list) to POST /predict over HTTP
-- [ ] label / difficulty / category / is_attack NEVER appear in any request;
+- [x] label / difficulty / category / is_attack NEVER appear in any request;
       the simulator never imports the model, joblib, or sklearn, never
       touches models/, and computes NO evaluation metric of any kind —
       KDDTest+ is replay input only; the locked once-only evaluation stays
       reserved for M8
-- [ ] Configurable: API URL, replay rate (flows/s), row limit, optional
+- [x] Configurable: API URL, replay rate (flows/s), row limit, optional
       duration cap, request timeout; sequential single-request pacing (no
       concurrency, no flooding); optional seeded shuffle so the demo shows
       a mix of attack types (KDDTest+ rows are ordered)
-- [ ] Demo-appropriate defaults (~1-2 flows/s, bounded rows), clear
+- [x] Demo-appropriate defaults (~1-2 flows/s, bounded rows), clear
       terminal progress (sent / ok / attacks observed / failures / rate)
-- [ ] Robust failure behavior: request timeout handled; API-down →
+- [x] Robust failure behavior: request timeout handled; API-down →
       wait-and-retry without losing the row; 422 and 5xx counted and
       reported, replay continues; Ctrl+C → clean summary exit
 
 END-TO-END DEMO (all three real components)
-- [ ] simulator → /predict → Random Forest pipeline → API state →
+- [x] simulator → /predict → Random Forest pipeline → API state →
       /stats + /predictions/recent → dashboard, verified live: counters
       advance, attack types accumulate, timeline/feed/alerts update, alert
       detail shows the 40 features + uncalibrated-confidence caveat, no
       ground-truth label visible anywhere in the UI
-- [ ] API stays responsive during replay; bounded history stays ≤ 1,000;
+- [x] API stays responsive during replay; bounded history stays ≤ 1,000;
       dashboard keeps polling with no console errors
 
 VERIFICATION
-- [ ] pytest suite for the simulator: exact payload fields, forbidden-field
+- [x] pytest suite for the simulator: exact payload fields, forbidden-field
       exclusion, request construction, rate pacing, row limit, timeout/422/
       5xx/connection-failure handling, clean shutdown, source scan (no
       model/evaluation references), all with mocked HTTP — no live API
       needed for unit tests
-- [ ] Full M1-M6 regression suite still green; adversarial audit passed
+- [x] Full M1-M6 regression suite still green; adversarial audit passed
 
 DOCS
-- [ ] README (demo run instructions + status), PROJECT_KNOWLEDGE, risk
+- [x] README (demo run instructions + status), PROJECT_KNOWLEDGE, risk
       register (R9 demo rehearsal) updated
