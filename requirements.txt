@@ -12,8 +12,10 @@ joblib==1.5.3
 # Notebook workflow: VS Code "# %%" cell execution (ADR-011)
 ipykernel==7.3.0
 
+# Milestone 5: prediction API (serves the M4 pipeline per ADR-012)
+fastapi==0.141.1
+uvicorn==0.52.4
+
 # Testing (ADR-013): run with `python -m pytest` from the project root
 pytest==9.1.1
-
-# Milestone 5+ (API) will add: fastapi, uvicorn
-# kept out for now so early setup stays fast
+httpx==0.28.1        # transport for FastAPI's TestClient
