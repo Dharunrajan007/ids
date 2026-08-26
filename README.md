@@ -24,7 +24,7 @@ ids/
 │   ├── data_loader.py     loads NSL-KDD with proper column names
 │   ├── preprocessing/     feature/target separation, encoding, scaling,
 │   │                      stratified train/validation split (Milestone 2)
-│   ├── training/          binary.py + train_binary.py runner (M3); multi-class (M4)
+│   ├── training/          binary.py + runner (M3); multiclass.py + runner (M4)
 │   └── evaluation/        metrics.py — confusion matrix + per-class P/R/F1
 ├── tests/         automated verification (pytest — see step 4 below)
 ├── models/        saved model artifacts (gitignored)
@@ -82,7 +82,11 @@ python -m venv .venv
       Random Forest on the stratified validation split; RF selected (attack
       recall 0.9978, 5 false positives) and serialized with its preprocessing
       as one pipeline; KDDTest+ untouched (2026-08-26)
-- [ ] Milestone 4 — attack-type classification + model comparison
+- [x] Milestone 4 — multi-class model (normal/DoS/Probe/R2L/U2R): majority
+      baseline vs LogReg vs Random Forest vs HistGradientBoosting; RF selected
+      (macro F1 0.9500, U2R recall 0.70, 26 missed attacks / 5 false alarms)
+      and serialized as the production candidate pipeline (ADR-012);
+      KDDTest+ still untouched (2026-08-26)
 - [ ] Milestone 5 — prediction API
 - [ ] Milestone 6 — React dashboard
 - [ ] Milestone 7 — traffic simulator + end-to-end demo

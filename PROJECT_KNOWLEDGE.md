@@ -3,7 +3,7 @@
 Single-file project memory. A new contributor (or a future AI session) should be able
 to work on this project from this file + the docs it links, with zero chat history.
 
-Last updated: 2026-08-26 (Milestone 3 complete: binary baseline = Random Forest).
+Last updated: 2026-08-26 (Milestone 4 complete: production multi-class model = Random Forest).
 
 ## What this project is
 
@@ -46,8 +46,11 @@ no websockets (polling), no packet capture (replay simulator).
 - [x] M3 binary baseline (2026-08-26) — Random Forest selected over LogReg and
       majority baseline on the validation split; serialized as one pipeline;
       full results + rationale in docs/m3-binary-evaluation.md
-- [ ] M4 multi-class + comparison → M5 API → M6 dashboard
-      → M7 simulator/demo → M8 docs → M9 (optional) CICIDS2017
+- [x] M4 multi-class model (2026-08-26) — Random Forest selected over LogReg and
+      HistGradientBoosting on macro F1 + minority-class recall; serialized as the
+      production candidate (ADR-012); full results + rationale in
+      docs/m4-multiclass-evaluation.md
+- [ ] M5 API → M6 dashboard → M7 simulator/demo → M8 docs → M9 (optional) CICIDS2017
 
 ## Important decisions (full reasoning in docs/DECISIONS.md)
 
@@ -91,8 +94,25 @@ Role per ADR-012: evaluated baseline only — never served by the API.
 Validation contains only training-known attack types; KDDTest+ (17 unseen
 types) stays untouched until the final locked evaluation and WILL score lower.
 
-M4 next: multi-class comparison of 2-3 algorithms, winner serialized with
-preprocessing as one Pipeline → becomes the production model.
+**M4 multi-class production model (done, 2026-08-26 — full numbers in
+docs/m4-multiclass-evaluation.md):** Random Forest (100 trees, defaults,
+RANDOM_STATE) selected over LogisticRegression (macro F1 0.8559) and
+HistGradientBoostingClassifier (macro F1 0.8121 — rejected mainly for U2R
+precision 0.10: 35 false u2r alarms). RF validation: accuracy 0.9988,
+macro F1 0.9500, R2L recall 0.9598 (191/199), U2R recall 0.70 (7/10 — only
+10 validation rows, coarse evidence), 26 missed attacks / 5 false alarms in
+the binary view (identical to the M3 binary forest — 5-class serving costs
+no detection). All RF attack errors are attack→normal misses; it never
+confused two attack categories on validation. Artifact:
+models/multiclass_pipeline.joblib (11.9 MB, ONE pipeline) +
+multiclass_metadata.json; reload exact on all 25,195 rows; two full runs
+byte-identical; train 4.3 s; single-flow predict 38.9 ms (NFR1 ≤ 200 ms).
+This is the pipeline /predict serves in M5 (ADR-012). HGB's pipeline needs
+a named densify step (it rejects sparse input) — kept in
+src/training/multiclass.py for reference.
+
+M5 next: FastAPI serving this artifact per the frozen contract
+(docs/api-contract.md): /predict, /stats, /predictions/recent, /health.
 Evaluation protocol (binding, full text in docs/risk-register.md):
 all selection/tuning on stratified KDDTrain+ validation/CV — stratified on the
 5-way `category` even for the binary task; KDDTest+ evaluated exactly once after
@@ -117,7 +137,8 @@ precision/recall/F1. `predict_proba` "confidence" is uncalibrated — caveat in 
 
 Rule: fit on the training split only; validation is transformed with the fitted
 object; KDDTest+ untouched (a source-scan test enforces src/preprocessing
-cannot read it). Run the suite with `python -m pytest` (21 tests, ~30 s).
+cannot read it). Run the suite with `python -m pytest` (43 tests, ~10 s;
+the source-scan covers src/preprocessing, src/training and src/evaluation).
 
 ## API endpoints (contract frozen — docs/api-contract.md)
 
@@ -146,10 +167,12 @@ ids/
 │   │                      (package: run via `python -m src.<module>` from the root)
 │   ├── preprocessing/     pipeline.py (column roles, build_preprocessor,
 │   │                      su_attempted repair) · split.py (stratified split)
-│   ├── training/          binary.py (pipelines + baseline) · train_binary.py runner
+│   ├── training/          binary.py (pipelines + baseline) · multiclass.py ·
+│   │                      train_binary.py / train_multiclass.py runners
 │   └── evaluation/        metrics.py (confusion matrix, per-class P/R/F1)
 ├── tests/                 conftest.py (shared fixtures) · test_preprocessing.py ·
-│                          test_training_binary.py (+ root conftest.py)
+│                          test_training_binary.py · test_training_multiclass.py
+│                          (+ root conftest.py)
 ├── api/ · simulator/      (.gitkeep, empty until M5/M7)
 └── dashboard/             (does not exist until M6)
 ```
