@@ -188,45 +188,45 @@ DOCS
 ## Milestone 6 — React dashboard (stack frozen by ADR-004; polling by ADR-007)
 
 APP
-- [ ] dashboard/ = React + Vite + Recharts, plain fetch, no state-management
+- [x] dashboard/ = React + Vite + Recharts, plain fetch, no state-management
       library, no WebSockets/database/auth (frozen scope); Vite pinned to
       port 5173 with strictPort (the API's CORS allows exactly that origin —
       a silent port shift would break the app confusingly)
-- [ ] Polls the real FastAPI service every 2 s (/stats + /predictions/recent,
+- [x] Polls the real FastAPI service every 2 s (/stats + /predictions/recent,
       ADR-007; /health on a slower cadence — it never changes mid-run);
       timer-chained polling with cleanup: no overlapping requests, no
       duplicated timers, no leaks after unmount
-- [ ] No KDDTest+ access (frontend code touches no dataset files at all)
+- [x] No KDDTest+ access (frontend code touches no dataset files at all)
 
 UI — professional IDS/SOC visual language, clear normal-vs-attack distinction
-- [ ] Header: project title, live API/model status from /health
+- [x] Header: project title, live API/model status from /health
       (model_version shown), connection indicator
-- [ ] Counters: total flows, normal, attacks (from /stats)
-- [ ] Traffic-over-time chart (per-minute normal vs attack, /stats timeline)
-- [ ] Attack-category breakdown chart (attacks_by_type)
-- [ ] Live prediction feed (newest first, from /predictions/recent)
-- [ ] Attack alerts section (attack rows only), clickable
-- [ ] Detail panel for a selected record: prediction, attack type,
+- [x] Counters: total flows, normal, attacks (from /stats)
+- [x] Traffic-over-time chart (per-minute normal vs attack, /stats timeline)
+- [x] Attack-category breakdown chart (attacks_by_type)
+- [x] Live prediction feed (newest first, from /predictions/recent)
+- [x] Attack alerts section (attack rows only), clickable
+- [x] Detail panel for a selected record: prediction, attack type,
       confidence (labeled as the model's UNCALIBRATED probability),
       timestamp, and the submitted features
-- [ ] States handled without crashing: initial loading, API disconnected
+- [x] States handled without crashing: initial loading, API disconnected
       (banner + retry, last data kept), empty history, malformed/unknown
       values (unknown attack categories render safely; React's default
       escaping only — no dangerouslySetInnerHTML)
-- [ ] Responsive layout (usable at laptop and half-screen widths);
+- [x] Responsive layout (usable at laptop and half-screen widths);
       no excessive animation, no feature bloat
 
 VERIFICATION
-- [ ] `npm run build` succeeds
-- [ ] Unit tests for the dashboard's pure logic (formatting, chart-data
+- [x] `npm run build` succeeds
+- [x] Unit tests for the dashboard's pure logic (formatting, chart-data
       shaping, alert filtering) pass via vitest
-- [ ] Live integration against the real running FastAPI service: load,
+- [x] Live integration against the real running FastAPI service: load,
       polling cadence, counters/charts/feed update, alert click → details,
       disconnect handling verified
-- [ ] Adversarial review (contract mismatch, timer leaks, race conditions,
+- [x] Adversarial review (contract mismatch, timer leaks, race conditions,
       empty/invalid data, CORS, rendering safety, M1-M5 regression) passed
-- [ ] Full Python suite still green (M1-M5 untouched)
+- [x] Full Python suite still green (M1-M5 untouched)
 
 DOCS
-- [ ] README (run instructions + status), PROJECT_KNOWLEDGE, risk register
+- [x] README (run instructions + status), PROJECT_KNOWLEDGE, risk register
       updated; new ADRs only if a genuine architectural decision arose

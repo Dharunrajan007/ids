@@ -53,7 +53,18 @@ no websockets (polling), no packet capture (replay simulator).
 - [x] M5 prediction API (2026-08-26) — FastAPI service in api/ serving the M4
       pipeline per the frozen contract; 30 API tests; warm latency 15 ms median
       (see "API layer" below)
-- [ ] M6 dashboard → M7 simulator/demo → M8 docs → M9 (optional) CICIDS2017
+- [x] M6 React dashboard (2026-08-26) — dashboard/ = React 19 + Vite 7 +
+      Recharts 3, polling /stats + /predictions/recent every 2 s and /health
+      every 10 s (ADR-007); dark SOC UI: counters, per-minute timeline,
+      category breakdown, live feed, attack alerts, detail panel (uncalibrated
+      caveat shown); Vite pinned to 5173 strictPort (CORS); timer-chained
+      polling hook (no overlap/leaks), stale-data-under-banner disconnect
+      handling, value-based selection identity; pure logic in
+      src/utils/format.js under 14 vitest tests (`npm test`); verified live
+      via headless Edge (playwright-core) — 15 integration checks incl.
+      polling cadence, disconnect recovery, 680px responsive. Run:
+      `cd dashboard && npm install && npm run dev` (API must be on :8000).
+- [ ] M7 simulator/demo → M8 docs → M9 (optional) CICIDS2017
 
 ## Important decisions (full reasoning in docs/DECISIONS.md)
 
@@ -195,6 +206,11 @@ ids/
 ├── api/                   main.py (app/endpoints/CORS) · schemas.py (Pydantic,
 │                          derived from the M2 allow-list) · model_service.py
 │                          (loads the M4 artifact once) · state.py (bounded history)
+├── dashboard/             package.json · vite.config.js (strictPort 5173) ·
+│                          src/App.jsx · components/ (Header, StatCards,
+│                          TimelineChart, AttackTypesChart, LiveFeed,
+│                          AlertsList, DetailPanel) · hooks/usePolling.js ·
+│                          services/api.js · utils/format.js (+ vitest tests)
 ├── simulator/             (.gitkeep, empty until M7)
 └── dashboard/             (does not exist until M6)
 ```

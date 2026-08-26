@@ -30,7 +30,7 @@ ids/
 ├── models/        saved model artifacts (gitignored)
 ├── api/           FastAPI prediction service (Milestone 5)
 ├── simulator/     traffic replay script (Milestone 7)
-├── dashboard/     React app (Milestone 6)
+├── dashboard/     React + Vite + Recharts dashboard (Milestone 6 — see step 7)
 └── docs/          requirements, API contract, decisions (ADRs), risk register,
                    definition of done, data dictionary
 ```
@@ -60,6 +60,9 @@ python -m venv .venv
 
 # 6. Start the prediction API  →  http://localhost:8000/docs
 .\.venv\Scripts\python.exe -m uvicorn api.main:app --port 8000
+
+# 7. Start the dashboard (needs Node.js; run in a second terminal)
+cd dashboard; npm install; npm run dev   # → http://localhost:5173
 ```
 
 The API loads `models/multiclass_pipeline.joblib` once at startup and serves
@@ -104,6 +107,11 @@ is **uncalibrated** — a relative score, not a correctness guarantee.
       pipeline (ADR-012); 40-feature validated schema, bounded in-memory
       stats/history, CORS for the Vite dev origin; warm prediction latency
       15 ms median over real HTTP (NFR1 < 200 ms); 30 API tests (2026-08-26)
-- [ ] Milestone 6 — React dashboard
+- [x] Milestone 6 — React dashboard: Vite + Recharts SOC-style UI polling the
+      API every 2 s (ADR-007) — live feed, attack alerts, counters, per-minute
+      timeline, category breakdown, clickable detail panel with the
+      uncalibrated-confidence caveat; disconnect/empty states handled;
+      14 vitest unit tests + 15 live headless-browser integration checks
+      against the real API (2026-08-26)
 - [ ] Milestone 7 — traffic simulator + end-to-end demo
 - [ ] Milestone 8 — final documentation
